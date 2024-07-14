@@ -19,7 +19,7 @@ import { useNavigate } from "react-router-dom";
 const theme = extendTheme({
   colors: {
     brand: {
-      text: "#FEFFFE",
+      text: "#000000",
       button: "#C25BD7",
     },
     gradients: {
@@ -42,13 +42,14 @@ const RegisterPage = () => {
         justify="center"
         bgGradient={theme.colors.gradients.blackToPurple}
       >
-        <Box position="absolute" top={10} width="full" textAlign="center">
+        <Box position="absolute" top={0}  textAlign="center">
           <Text
             bgGradient="linear(to-l, #7928CA, #FF0080)"
+            bgClip="text"
             fontSize="6xl"
             fontWeight="extrabold"
           >
-            Spotinova
+            SpotiNova
           </Text>
         </Box>
         <Box
@@ -66,7 +67,7 @@ const RegisterPage = () => {
           >
             <VStack spacing={6}>
               <FormControl textAlign="left">
-                <FormLabel color="brand.text" fontSize="lg" fontWeight="bold">
+                <FormLabel color="brand.text" textAlign="center" fontSize="lg" fontWeight="bold">
                   Register
                 </FormLabel>
                 <FormLabel color="brand.text" fontSize="sm" mt={4}>
@@ -103,9 +104,9 @@ const RegisterPage = () => {
               </Button>
               <Text color="brand.text" fontSize="sm">
                 Already have an account?{" "}
-                <Link color = "brand.button" fontWeight="semibold" href="/login">
+                <Link color="brand.button" fontWeight="semibold" href="/login">
                   Log in
-                  </Link>
+                </Link>
               </Text>
             </VStack>
           </form>
