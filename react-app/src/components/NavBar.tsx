@@ -36,7 +36,7 @@ const NavLink = (props: Props) => {
         textDecoration: "none",
         bg: useColorModeValue("gray.200", "gray.700"),
       }}
-      href={"#"}
+      href={"/" + (children as string).toLowerCase()}
     >
       {children}
     </Box>
