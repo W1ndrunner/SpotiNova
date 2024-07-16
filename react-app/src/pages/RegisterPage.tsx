@@ -43,7 +43,7 @@ const RegisterPage = () => {
         justify="center"
         bgGradient={theme.colors.gradients.blackToPurple}
       >
-        <Box position="absolute" top={0}  textAlign="center">
+        <Box position="absolute" top={0} textAlign="center">
           <Text
             bgGradient="linear(to-l, #7928CA, #FF0080)"
             bgClip="text"
@@ -68,7 +68,12 @@ const RegisterPage = () => {
           >
             <VStack spacing={6}>
               <FormControl textAlign="left">
-                <FormLabel color="brand.text" textAlign="center" fontSize="lg" fontWeight="bold">
+                <FormLabel
+                  color="brand.text"
+                  textAlign="center"
+                  fontSize="lg"
+                  fontWeight="bold"
+                >
                   Register
                 </FormLabel>
                 <FormLabel color="brand.text" fontSize="sm" mt={4}>
