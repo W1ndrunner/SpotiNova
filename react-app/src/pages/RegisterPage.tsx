@@ -20,7 +20,7 @@ const theme = extendTheme({
   colors: {
     brand: {
       text: "#000000",
-      button: "#C25BD7",
+      button: "#5A007D",
     },
     gradients: {
       blackToPurple: "linear(to-br, #000000, #5A007D)",
@@ -28,6 +28,7 @@ const theme = extendTheme({
   },
 });
 const RegisterPage = () => {
+  const navigate = useNavigate();
   const {
     register,
     handleSubmit,
