@@ -3,6 +3,7 @@ const pg = require('pg');
 const app = express();
 const fs = require('fs');
 const cors = require('cors');
+const bcrypt = require('bcrypt');
 require('dotenv').config();
 
 
@@ -33,11 +34,12 @@ app.use(cors(corsOptions));
 app.post('/users/create', async (req, res) => {
     try{
         const{email, password} = req.body;
+        const saltRounds = 10;
+        const hash = await bcrypt.hash(password, saltRounds);
         const now = new Date();
         const query = 'INSERT INTO users (userid, email, userpassword, registrationdate) VALUES (DEFAULT, $1, $2, $3) RETURNING *';
-        const values = [email, password, now];
+        const values = [email, hash, now];
         const result = await pool.query(query, values);
-
         if (result.rows.length > 0){
             res.status(200).json(result.rows[0]);
         } else{
@@ -47,7 +49,31 @@ app.post('/users/create', async (req, res) => {
         console.error(err);
         res.status(500).json({error: 'An error occurred'});
     }
-})
+});
+
+// Authentice User (GET request)
+app.get('/users/authenticate', async (req, res) => {
+    try{
+        const {email, password} = req.query;
+        const query = 'SELECT email, userpassword from users WHERE email = $1';
+        const values = [email];
+        const result = await pool.query(query, values);
+        if (result.rows.length > 0){
+            const user = result.rows[0];
+            if (bcrypt.compare(password, user.userpassword)){
+                res.status(200).send('User authenticated');
+            } else{
+                res.status(401).send('Invalid password');
+            
+            }
+        } else{
+            res.status(404).send('User not found');
+        }
+    } catch (err){
+        console.error(err);
+        res.status(500).json({error: 'An error occurred'});
+    }
+});
 
 // Starts Express server on port 3000
 app.listen(3000, () => {

@@ -15,6 +15,8 @@ import {
 } from "@chakra-ui/react";
 import { FieldValues, SubmitHandler, useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
+import useAuthUser from "../stores/useAuthUser";
+import { authenticateUser } from "../services/DatabaseAPIClient";
 
 const theme = extendTheme({
   colors: {
@@ -29,18 +31,24 @@ const theme = extendTheme({
 });
 const LoginPage = () => {
   const navigate = useNavigate();
+  const { setUser } = useAuthUser();
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm();
 
-  const handleSignIn = () => {
-    handleLogin();
+  const handleSignIn = (data: { email: string; password: string }) => {
+    handleLogin(data.email, data.password);
   };
-  const handleLogin = async () => {
+
+  const handleLogin = async (email: string, password: string) => {
     try {
-      navigate("/");
+      console.log("email" + email + "password" + password);
+      const response = await authenticateUser({ email, password });
+      localStorage.setItem("user", JSON.stringify({ email: email }));
+      setUser(email);
+      navigate("/home");
     } catch (error: any) {
       alert(error.message);
     }
@@ -73,9 +81,7 @@ const LoginPage = () => {
           width="full"
         >
           <form
-            onSubmit={handleSubmit((data) => {
-              console.log(data);
-            })}
+            onSubmit={handleSubmit(handleSignIn as SubmitHandler<FieldValues>)}
           >
             <VStack spacing={6}>
               <FormControl textAlign="left">

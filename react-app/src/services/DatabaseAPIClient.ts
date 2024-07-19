@@ -10,3 +10,12 @@ export const createUser = async (userData : {email: string, password: string}) =
         throw error.response.data;
     }
 };
+
+export const authenticateUser = async (userData: {email: string, password: string}) => {
+    try{
+        const response = await axios.get(`${serverBaseURL}/users/authenticate`, {params: userData,});
+        return response.data;
+    } catch (error: any) {
+        throw error.response.data;
+    }
+};
