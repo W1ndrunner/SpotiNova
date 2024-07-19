@@ -15,6 +15,8 @@ import {
 } from "@chakra-ui/react";
 import { FieldValues, SubmitHandler, useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
+import useAuthUser from "../stores/useAuthUser";
+import { createUser } from "../services/DatabaseAPIClient";
 
 const theme = extendTheme({
   colors: {
@@ -29,11 +31,35 @@ const theme = extendTheme({
 });
 const RegisterPage = () => {
   const navigate = useNavigate();
+  const { setUser } = useAuthUser();
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm();
+
+  const passwordValidation = /^(?=.*[A-Z])(?=.*[a-z]).{8,}$/;
+
+  const handleSignIn = (data: { email: string; password: string }) => {
+    if (!passwordValidation.test(data.password)) {
+      alert(
+        "Password must contain at least 8 characters, one uppercase letter and one lowercase letter"
+      );
+      return;
+    }
+    handleRegister(data.email, data.password);
+  };
+
+  const handleRegister = async (email: string, password: string) => {
+    try {
+      const response = await createUser({ email, password });
+      localStorage.setItem("user", JSON.stringify({ email: email }));
+      setUser(email);
+      navigate("/home");
+    } catch (error: any) {
+      alert(error.message);
+    }
+  };
 
   return (
     <ChakraProvider theme={theme}>
@@ -62,9 +88,7 @@ const RegisterPage = () => {
           width="full"
         >
           <form
-            onSubmit={handleSubmit((data) => {
-              console.log(data);
-            })}
+            onSubmit={handleSubmit(handleSignIn as SubmitHandler<FieldValues>)}
           >
             <VStack spacing={6}>
               <FormControl textAlign="left">
