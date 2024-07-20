@@ -51,6 +51,10 @@ app.post('/users/create', async (req, res) => {
     }
 });
 
+async function authenticateUser(password, user){
+    const result = await bcrypt.compare(password, user.userpassword);
+    return result;
+}
 // Authentice User (GET request)
 app.get('/users/authenticate', async (req, res) => {
     try{
@@ -60,11 +64,11 @@ app.get('/users/authenticate', async (req, res) => {
         const result = await pool.query(query, values);
         if (result.rows.length > 0){
             const user = result.rows[0];
-            if (bcrypt.compare(password, user.userpassword)){
+            const result2 = await authenticateUser(password, user);
+            if (result2){
                 res.status(200).send('User authenticated');
             } else{
-                res.status(401).send('Invalid password');
-            
+                res.status(401).send('User not authenticated');
             }
         } else{
             res.status(404).send('User not found');

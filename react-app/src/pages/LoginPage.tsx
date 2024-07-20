@@ -44,7 +44,6 @@ const LoginPage = () => {
 
   const handleLogin = async (email: string, password: string) => {
     try {
-      console.log("email" + email + "password" + password);
       const response = await authenticateUser({ email, password });
       localStorage.setItem("user", JSON.stringify({ email: email }));
       setUser(email);
