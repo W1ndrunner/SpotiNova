@@ -4,8 +4,11 @@ const app = express();
 const fs = require('fs');
 const cors = require('cors');
 const bcrypt = require('bcrypt');
+const querystring = require('querystring');
+const cookieParser = require('cookie-parser');
+const { error } = require('console');
 require('dotenv').config();
-
+const redirect_url = 'http://localhost:3000/callback';
 
 // Database connection details with SSL
 const pool = new pg.Pool({
@@ -20,6 +23,15 @@ const pool = new pg.Pool({
 
 });
 
+const generateRandomString = function(length) {
+    let text = '';
+    const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    for (let i = 0; i < length; i++) {
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
+    }
+    return text;
+};
+
 // Helps convert JSON to JavaScript object
 app.use(express.json());
 const corsOptions ={
@@ -27,7 +39,7 @@ const corsOptions ={
     credentials:true,            //access-control-allow-credentials:true
     optionsSuccessStatus:200
 }
-
+let stateKey = 'spotify_auth_state'; // Name of cookie
 app.use(cors(corsOptions));
 
 // Create User (POST request)
@@ -79,7 +91,76 @@ app.get('/users/authenticate', async (req, res) => {
     }
 });
 
-// Starts Express server on port 3000
+app.get('/connect', function(req, res) { // handle login request from connect button on homepage
+    let state = generateRandomString(16);
+    res.cookie(stateKey, state); // set cookie to travel with request
+    res.header('Access-Control-Allow-Origin', '*');
+    // request authorisation - auto redirects to callback
+    const scope = 'user-top-read ';
+    res.redirect('https://accounts.spotify.com/authorize?' +
+        querystring.stringify({
+            response_type: 'code',
+            client_id: process.env.CLIENT_ID,
+            scope: scope,
+            redirect_uri: redirect_url,
+            state: state
+        }));
+});
+
+app.get('/callback', function(req, res) {
+
+    // Request resresh and access tokens after comparing states
+    let code = req.query.code || null;
+    let state = req.query.state || null;
+    let storedState = req.cookies ? req.cookies[stateKey] : null;
+
+    if (state === null || state !== storedState) {
+        res.redirect('/#' +
+            querystring.stringify({
+                error: 'state_mismatch'
+            }));
+    } else{
+        res.clearCookie(stateKey);
+        res.header('Access-Control-Allow-Origin', '*');
+        const authOptions = {
+            method: 'POST',
+            headers: {
+                'Access-Control-Allow-Origin': '*',
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Authorization': 'Basic' + (Buffer.from(process.env.CLIENT_ID + ':' + process.env.CLIENT_SECRET).toString('base64'))
+            },
+            body: `code=${code}&reditect_uri=${redirect_url}&grant_type=authorization_code`,
+            json: true
+        };
+
+        fetch('https://accounts.spotify.com/api/token', authOptions)
+        .then((response) => {
+            if (response.status === 200) {
+                response.json().then((data) => {
+                    const access_token = data.access_token;
+                    const refresh_token = data.refresh_token;
+                    console.log('access token:', access_token);
+                    console.log('refresh token:', refresh_token);
+                    res.redirect('/home' + 
+                        querystring.stringify({
+                            access_token: access_token,
+                            refresh_token: refresh_token
+                        }));
+                        });
+                } else{
+                    res.redirect('/home' +
+                        querystring.stringify({
+                            error: 'invalid_token'
+                        }));
+                };
+            })
+            .catch(error => {
+                console.error(error);
+            });
+    }
+});
+
+    // Starts Express server on port 3000
 app.listen(3000, () => {
     console.log('Server listening on port 3000');
 });

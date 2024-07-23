@@ -19,3 +19,12 @@ export const authenticateUser = async (userData: {email: string, password: strin
         throw error.response.data;
     }
 };
+
+export const connectSpotify = async () => {
+    try{
+        const response = await axios.get(`${serverBaseURL}/connect`);
+        return response.data;
+    } catch(error: any) {
+        throw error.response.data;
+    }
+};

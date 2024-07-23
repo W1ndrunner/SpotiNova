@@ -21,6 +21,8 @@ import {
 import { FieldValues, SubmitHandler, useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import NavBar from "../components/NavBar";
+import { connectSpotify } from "../services/DatabaseAPIClient";
+
 const theme = extendTheme({
   colors: {
     brand: {
@@ -34,6 +36,14 @@ const theme = extendTheme({
 });
 
 const HomePage = () => {
+  const connect = async () => {
+    try {
+      const response = await connectSpotify();
+      console.log(response);
+    } catch (error: any) {
+      alert(error.message);
+    }
+  };
   return (
     <ChakraProvider theme={theme}>
       <Flex
@@ -43,6 +53,9 @@ const HomePage = () => {
         bgGradient={theme.colors.gradients.blackToPurple}
       >
         <NavBar />
+        <Button colorScheme="purple" onClick={connect}>
+          Connect to Spotify
+        </Button>
       </Flex>
     </ChakraProvider>
   );
