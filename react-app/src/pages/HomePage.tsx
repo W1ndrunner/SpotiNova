@@ -38,8 +38,7 @@ const theme = extendTheme({
 const HomePage = () => {
   const connect = async () => {
     try {
-      const response = await connectSpotify();
-      console.log(response);
+      window.location.href = "http://localhost:3000/connect";
     } catch (error: any) {
       alert(error.message);
     }

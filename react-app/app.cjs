@@ -34,6 +34,7 @@ const generateRandomString = function(length) {
 
 // Helps convert JSON to JavaScript object
 app.use(express.json());
+app.use(cookieParser());
 const corsOptions ={
     origin:'http://localhost:5173', 
     credentials:true,            //access-control-allow-credentials:true
@@ -113,7 +114,8 @@ app.get('/callback', function(req, res) {
     let code = req.query.code || null;
     let state = req.query.state || null;
     let storedState = req.cookies ? req.cookies[stateKey] : null;
-
+    console.log('state:', state);
+    console.log('storedState:', storedState);
     if (state === null || state !== storedState) {
         res.redirect('/#' +
             querystring.stringify({
@@ -121,15 +123,13 @@ app.get('/callback', function(req, res) {
             }));
     } else{
         res.clearCookie(stateKey);
-        res.header('Access-Control-Allow-Origin', '*');
         const authOptions = {
             method: 'POST',
             headers: {
-                'Access-Control-Allow-Origin': '*',
                 'Content-Type': 'application/x-www-form-urlencoded',
-                'Authorization': 'Basic' + (Buffer.from(process.env.CLIENT_ID + ':' + process.env.CLIENT_SECRET).toString('base64'))
+                'Authorization': 'Basic ' + (Buffer.from(process.env.CLIENT_ID + ':' + process.env.CLIENT_SECRET).toString('base64'))
             },
-            body: `code=${code}&reditect_uri=${redirect_url}&grant_type=authorization_code`,
+            body: `code=${code}&redirect_uri=${redirect_url}&grant_type=authorization_code`,
             json: true
         };
 
@@ -148,6 +148,7 @@ app.get('/callback', function(req, res) {
                         }));
                         });
                 } else{
+                    console.log('error:', response);
                     res.redirect('/home' +
                         querystring.stringify({
                             error: 'invalid_token'
