@@ -28,3 +28,12 @@ export const connectSpotify = async () => {
         throw error.response.data;
     }
 };
+
+export const addTokens = async (userData : {email: string, accessToken: string, refreshToken: string}) => {
+    try{
+        const response = await axios.post(`${serverBaseURL}/users/addTokens`, userData);
+        return response.data;
+    } catch (error: any) {
+        throw error.response.data;
+    }
+};

@@ -92,6 +92,27 @@ app.get('/users/authenticate', async (req, res) => {
     }
 });
 
+// Add tokens to user (POST request)
+app.post('/users/addTokens', async (req, res) => {
+    try{
+        const{email, access_token, refresh_token} = req.body;
+        const expires_at = new Date(new Date().getTime() + 3600 * 1000);
+        const query = 'UPDATE users SET accesstoken = $1, refreshtoken = $2, tokenexpire = $3 WHERE email = $4 RETURNING *';
+        const values = [access_token, refresh_token, expires_at, email];
+        const result = await pool.query(query, values);
+        if (result.rows.length > 0){
+            res.status(200).json(result.rows[0]);
+        } else{
+            res.status(400).send('Tokens not added');
+        }
+    } catch (error){
+        console.error(error);
+        res.status(500).json({error: 'An error occurred'});
+    }
+});
+
+
+// Connect to Spotify (GET request)
 app.get('/connect', function(req, res) { // handle login request from connect button on homepage
     let state = generateRandomString(16);
     res.cookie(stateKey, state); // set cookie to travel with request
@@ -108,14 +129,13 @@ app.get('/connect', function(req, res) { // handle login request from connect bu
         }));
 });
 
+// Callback function to receive tokens
 app.get('/callback', function(req, res) {
 
     // Request resresh and access tokens after comparing states
     let code = req.query.code || null;
     let state = req.query.state || null;
     let storedState = req.cookies ? req.cookies[stateKey] : null;
-    console.log('state:', state);
-    console.log('storedState:', storedState);
     if (state === null || state !== storedState) {
         res.redirect('/#' +
             querystring.stringify({
@@ -139,9 +159,11 @@ app.get('/callback', function(req, res) {
                 response.json().then((data) => {
                     const access_token = data.access_token;
                     const refresh_token = data.refresh_token;
+                    const expires_at = new Date(new Date().getTime() + data.expires_in * 1000); 
                     console.log('access token:', access_token);
                     console.log('refresh token:', refresh_token);
-                    res.redirect('/home' + 
+                    console.log('expires at: ' + expires_at);
+                    res.redirect('http://localhost:5173/home?' + 
                         querystring.stringify({
                             access_token: access_token,
                             refresh_token: refresh_token
