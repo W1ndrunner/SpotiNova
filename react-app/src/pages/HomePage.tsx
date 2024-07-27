@@ -23,7 +23,7 @@ import { useNavigate } from "react-router-dom";
 import NavBar from "../components/NavBar";
 import { connectSpotify, addTokens } from "../services/DatabaseAPIClient";
 import useAuthUser from "../stores/useAuthUser";
-
+import  getToken, getTopTracks, getTopArtists from "../services/SpotifyAPIClient";
 const theme = extendTheme({
   colors: {
     brand: {
