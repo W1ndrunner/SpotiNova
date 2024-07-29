@@ -95,10 +95,10 @@ app.get('/users/authenticate', async (req, res) => {
 // Add tokens to user (POST request)
 app.post('/users/addTokens', async (req, res) => {
     try{
-        const{email, access_token, refresh_token} = req.body;
+        const{email, accessToken, refreshToken} = req.body;
         const expires_at = new Date(new Date().getTime() + 3600 * 1000);
         const query = 'UPDATE users SET accesstoken = $1, refreshtoken = $2, tokenexpire = $3 WHERE email = $4 RETURNING *';
-        const values = [access_token, refresh_token, expires_at, email];
+        const values = [accessToken, refreshToken, expires_at, email];
         const result = await pool.query(query, values);
         if (result.rows.length > 0){
             res.status(200).json(result.rows[0]);
@@ -160,9 +160,6 @@ app.get('/callback', function(req, res) {
                     const access_token = data.access_token;
                     const refresh_token = data.refresh_token;
                     const expires_at = new Date(new Date().getTime() + data.expires_in * 1000); 
-                    console.log('access token:', access_token);
-                    console.log('refresh token:', refresh_token);
-                    console.log('expires at: ' + expires_at);
                     res.redirect('http://localhost:5173/home?' + 
                         querystring.stringify({
                             access_token: access_token,
