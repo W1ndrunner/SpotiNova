@@ -109,17 +109,22 @@ const HomePage = () => {
       }
       localStorage.setItem("topTracks", JSON.stringify(topTracks));
       localStorage.setItem("topArtists", JSON.stringify(topArtists));
+      localStorage.setItem("statsTime", new Date().getTime().toString());
+      window.location.href="/home";
     } catch (error: any) {
       alert(error.message);
     }
   };
   let tokensExist = false;
-  const statsExist = false;
+  let statsExist = false;
   const queryParams = new URLSearchParams(window.location.search);
   const accessToken = queryParams.get("access_token") ?? "";
   const refreshToken = queryParams.get("refresh_token") ?? "";
   if (accessToken != "" && refreshToken != "") {
     tokensExist = true;
+  }
+  if (localStorage.getItem("topTracks") != null) {
+    statsExist = true;
   }
   const renderComponentBasedOnCondition = () => {
     if (tokensExist) {
@@ -133,8 +138,49 @@ const HomePage = () => {
         </Button>
       );
     } else if (statsExist) {
-      // TODO Render stats
-      return <Text>Stats exist</Text>;
+      const topTracksJSON = localStorage.getItem("topTracks");
+      const topArtistsJSON = localStorage.getItem("topArtists");
+      let topTracks: Track[] = [];
+      let topArtists: Artist[] = [];
+
+      if (topTracksJSON != null) {
+        topTracks = JSON.parse(topTracksJSON);
+      }
+      if (topArtistsJSON != null) {
+        topArtists = JSON.parse(topArtistsJSON);
+      }
+
+      const artistElements = topArtists.map((artist) => (
+        <li key={artist.name}>
+          <img src={artist.image} alt="Artist" />
+          <p>
+            <b>{artist.name}</b>
+          </p>
+        </li>
+      ));
+
+      const trackElements = topTracks.map((track) => (
+        <li key={track.name}>
+          <img src={track.image} alt="Track" />
+          <p>
+            <b>{track.name}</b>
+            {" - " + track.artist}
+          </p>
+        </li>
+      ));
+
+      return (
+        <HStack>
+          <Box>
+            <h2>Top Artists</h2>
+            <ul>{artistElements}</ul>
+          </Box>
+          <Box>
+            <h2>Top Tracks</h2>
+            <ul>{trackElements}</ul>
+          </Box>
+        </HStack>
+      );
     } else {
       return (
         <Button colorScheme="purple" onClick={connect}>
