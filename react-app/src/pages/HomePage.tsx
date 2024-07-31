@@ -6,6 +6,7 @@ import {
   HStack,
   Text,
   IconButton,
+  Image,
   Button,
   Menu,
   MenuButton,
@@ -110,7 +111,7 @@ const HomePage = () => {
       localStorage.setItem("topTracks", JSON.stringify(topTracks));
       localStorage.setItem("topArtists", JSON.stringify(topArtists));
       localStorage.setItem("statsTime", new Date().getTime().toString());
-      window.location.href="/home";
+      window.location.href = "/home";
     } catch (error: any) {
       alert(error.message);
     }
@@ -152,8 +153,8 @@ const HomePage = () => {
 
       const artistElements = topArtists.map((artist) => (
         <li key={artist.name}>
-          <img src={artist.image} alt="Artist" />
-          <p>
+          <Image src={artist.image} boxSize="200px" alt="Artist" />
+          <p style={{ color: "white" }}>
             <b>{artist.name}</b>
           </p>
         </li>
@@ -161,8 +162,8 @@ const HomePage = () => {
 
       const trackElements = topTracks.map((track) => (
         <li key={track.name}>
-          <img src={track.image} alt="Track" />
-          <p>
+          <Image src={track.image} boxSize="200px" alt="Track" />
+          <p style={{ color: "white" }}>
             <b>{track.name}</b>
             {" - " + track.artist}
           </p>
