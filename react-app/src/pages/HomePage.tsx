@@ -18,6 +18,7 @@ import {
   Stack,
   extendTheme,
   ChakraProvider,
+  VStack,
 } from "@chakra-ui/react";
 import { FieldValues, SubmitHandler, useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
@@ -152,35 +153,51 @@ const HomePage = () => {
       }
 
       const artistElements = topArtists.map((artist) => (
-        <li key={artist.name}>
+        <Box
+          maxW="200px"
+          display="flex"
+          flexDirection="column"
+          justifyContent="center"
+          alignItems="center"
+        >
           <Image src={artist.image} boxSize="200px" alt="Artist" />
-          <p style={{ color: "white" }}>
+          <Text style={{ color: "white" }}>
             <b>{artist.name}</b>
-          </p>
-        </li>
+          </Text>
+        </Box>
       ));
 
       const trackElements = topTracks.map((track) => (
-        <li key={track.name}>
+        <Box
+          maxW="200px"
+          display="flex"
+          flexDirection="column"
+          justifyContent="center"
+          alignItems="center"
+        >
           <Image src={track.image} boxSize="200px" alt="Track" />
-          <p style={{ color: "white" }}>
+          <Text style={{ color: "white" }}>
             <b>{track.name}</b>
             {" - " + track.artist}
-          </p>
-        </li>
+          </Text>
+        </Box>
       ));
 
       return (
-        <HStack>
-          <Box>
-            <h2>Top Artists</h2>
-            <ul>{artistElements}</ul>
-          </Box>
-          <Box>
-            <h2>Top Tracks</h2>
-            <ul>{trackElements}</ul>
-          </Box>
-        </HStack>
+        <VStack spacing={10}>
+          <HStack>
+            <Text fontSize="xl" color="white">
+              Top Artists
+            </Text>
+            {artistElements}
+          </HStack>
+          <HStack alignItems="baseline">
+            <Text fontSize="xl" color="white">
+              Top Tracks
+            </Text>
+            {trackElements}
+          </HStack>
+        </VStack>
       );
     } else {
       return (
@@ -199,7 +216,9 @@ const HomePage = () => {
         bgGradient={theme.colors.gradients.blackToPurple}
       >
         <NavBar />
-        {renderComponentBasedOnCondition()}
+        <Flex flex="1" justifyContent="Center" alignItems="center">
+          {renderComponentBasedOnCondition()}
+        </Flex>
       </Flex>
     </ChakraProvider>
   );
