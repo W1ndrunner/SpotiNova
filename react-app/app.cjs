@@ -47,6 +47,13 @@ app.use(cors(corsOptions));
 app.post('/users/create', async (req, res) => {
     try{
         const{email, password} = req.body;
+        const query1 = 'SELECT email from users WHERE email = $1';
+        const values1 = [email];
+        const result1 = await pool.query(query1, values1);
+        if (result1.rows.length > 0){
+            res.status(409).send('User already exists');
+            return;
+        }
         const saltRounds = 10;
         const hash = await bcrypt.hash(password, saltRounds);
         const now = new Date();
