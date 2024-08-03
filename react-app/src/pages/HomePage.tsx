@@ -23,6 +23,7 @@ import {
 import { FieldValues, SubmitHandler, useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import NavBar2 from "../components/NavBar2";
+import HomeMenu from "../components/Menu";
 import { connectSpotify, addTokens } from "../services/DatabaseAPIClient";
 import useAuthUser from "../stores/useAuthUser";
 import {
@@ -39,6 +40,7 @@ const theme = extendTheme({
     },
     gradients: {
       blackToPurple: "linear(to-br, #000000, #5A007D)",
+      salmonToPurple: "linear(to-l, #7928CA, #FF0080)",
     },
   },
 });
@@ -215,8 +217,21 @@ const HomePage = () => {
         width="100%"
         bgGradient={theme.colors.gradients.blackToPurple}
       >
-        <HStack justify="Center">
-        <NavBar2 />
+        <HStack justifyContent="space-between" width="100%" alignItems="center">
+          <Box textAlign="center">
+            <Text
+              bgGradient="linear(to-l, #7928CA, #FF0080)"
+              bgClip="text"
+              fontSize="30px"
+              fontWeight="extrabold"
+            >
+              SpotiNova
+            </Text>
+          </Box>
+          <Box justifyContent={"left"}>
+          <NavBar2 />
+          </Box>
+          <HomeMenu />
         </HStack>
         <Flex flex="1" justifyContent="Center" alignItems="center">
           {renderComponentBasedOnCondition()}
