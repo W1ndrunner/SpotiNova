@@ -14,9 +14,20 @@ import {
   useDisclosure,
   useColorModeValue,
   Stack,
+  extendTheme,
 } from "@chakra-ui/react";
 import { HamburgerIcon, CloseIcon } from "@chakra-ui/icons";
-
+const theme = extendTheme({
+  colors: {
+    brand: {
+      text: "#000000",
+      button: "#5A007D",
+    },
+    gradients: {
+      blackToPurple: "linear(to-br, #000000, #5A007D)",
+    },
+  },
+});
 interface Props {
   children: React.ReactNode;
 }
@@ -48,7 +59,7 @@ const NavBar = () => {
 
   return (
     <>
-      <Box bg={useColorModeValue("gray.100", "gray.900")} px={4}>
+      <Box bg="white" px={4}>
         <Flex h={16} alignItems={"center"} justifyContent={"space-between"}>
           <IconButton
             size={"md"}

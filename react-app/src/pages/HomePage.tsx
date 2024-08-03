@@ -22,7 +22,7 @@ import {
 } from "@chakra-ui/react";
 import { FieldValues, SubmitHandler, useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import NavBar from "../components/NavBar";
+import NavBar2 from "../components/NavBar2";
 import { connectSpotify, addTokens } from "../services/DatabaseAPIClient";
 import useAuthUser from "../stores/useAuthUser";
 import {
@@ -192,7 +192,7 @@ const HomePage = () => {
             {artistElements}
           </HStack>
           <HStack alignItems="baseline">
-            <Text fontSize="xl" color="white">
+            <Text fontSize="xl" color="white" alignSelf="center">
               Top Tracks
             </Text>
             {trackElements}
@@ -215,7 +215,9 @@ const HomePage = () => {
         width="100%"
         bgGradient={theme.colors.gradients.blackToPurple}
       >
-        <NavBar />
+        <HStack justify="Center">
+        <NavBar2 />
+        </HStack>
         <Flex flex="1" justifyContent="Center" alignItems="center">
           {renderComponentBasedOnCondition()}
         </Flex>
