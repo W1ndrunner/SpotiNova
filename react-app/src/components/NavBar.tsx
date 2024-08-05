@@ -1,3 +1,4 @@
+import React from "react";
 import {
   Box,
   Flex,
@@ -6,6 +7,7 @@ import {
   Text,
   IconButton,
   Button,
+  Link,
   Menu,
   MenuButton,
   MenuList,
@@ -15,6 +17,7 @@ import {
   useColorModeValue,
   Stack,
   extendTheme,
+  ChakraProvider,
 } from "@chakra-ui/react";
 import { HamburgerIcon, CloseIcon } from "@chakra-ui/icons";
 const theme = extendTheme({
@@ -24,100 +27,39 @@ const theme = extendTheme({
       button: "#5A007D",
     },
     gradients: {
-      blackToPurple: "linear(to-br, #000000, #5A007D)",
+      blackToPurple: "linear(to-br, #67007A, #430056)",
     },
   },
 });
-interface Props {
-  children: React.ReactNode;
-}
-
-const Links = ["Recommendations", "Stats", "Team"];
-
-const NavLink = (props: Props) => {
-  const { children } = props;
-
-  return (
-    <Box
-      as="a"
-      px={2}
-      py={1}
-      rounded={"md"}
-      _hover={{
-        textDecoration: "none",
-        bg: useColorModeValue("gray.200", "gray.700"),
-      }}
-      href={"/" + (children as string).toLowerCase()}
-    >
-      {children}
-    </Box>
-  );
-};
 
 const NavBar = () => {
-  const { isOpen, onOpen, onClose } = useDisclosure();
-
   return (
-    <>
-      <Box bg="white" px={4}>
-        <Flex h={16} alignItems={"center"} justifyContent={"space-between"}>
-          <IconButton
-            size={"md"}
-            icon={isOpen ? <CloseIcon /> : <HamburgerIcon />}
-            aria-label={"Open Menu"}
-            display={{ md: "none" }}
-            onClick={isOpen ? onClose : onOpen}
-          />
-          <HStack spacing={8} alignItems={"center"}>
-            <Box>Logo</Box>
-            <HStack
-              as={"nav"}
-              spacing={4}
-              display={{ base: "none", md: "flex" }}
-            >
-              {Links.map((link) => (
-                <NavLink key={link}>{link}</NavLink>
-              ))}
-            </HStack>
-          </HStack>
-          <Flex alignItems={"center"}>
-            <Menu>
-              <MenuButton
-                as={Button}
-                rounded={"full"}
-                variant={"link"}
-                cursor={"pointer"}
-                minW={0}
-              >
-                <Avatar
-                  size={"sm"}
-                  src={
-                    "https://images.rawpixel.com/image_png_800/cHJpdmF0ZS9sci9pbWFnZXMvd2Vic2l0ZS8yMDIzLTAxL3JtNjA5LXNvbGlkaWNvbi13LTAwMi1wLnBuZw.png"
-                  }
-                />
-              </MenuButton>
-              <MenuList>
-                <MenuItem>Account Settings</MenuItem>
-                <MenuItem>Link 2</MenuItem>
-                <MenuDivider />
-                <MenuItem>Log out</MenuItem>
-              </MenuList>
-            </Menu>
-          </Flex>
-        </Flex>
-
-        {isOpen ? (
-          <Box pb={4} display={{ md: "none" }}>
-            <Stack as={"nav"} spacing={4}>
-              {Links.map((link) => (
-                <NavLink key={link}>{link}</NavLink>
-              ))}
-            </Stack>
-          </Box>
-        ) : null}
+    <ChakraProvider theme={theme}>
+      <Box
+        bgGradient={theme.colors.gradients.blackToPurple}
+        borderRadius="40px"
+        p={3}
+        boxShadow="md"
+        maxW="400px"
+        width="100%"
+      >
+        <HStack spacing={4}>
+          <Link href="/home">
+          <Button colorScheme="brand" variant="solid" borderRadius="md">
+            Home
+          </Button>
+          </Link>
+          <Link href="/recommendations">
+          <Button colorScheme="brand" variant="solid" borderRadius="md">
+            Recommendations
+          </Button>
+          </Link>
+          <Button colorScheme="brand" variant="solid" borderRadius="md">
+            Stats
+          </Button>
+        </HStack>
       </Box>
-
-    </>
+    </ChakraProvider>
   );
 };
 export default NavBar;

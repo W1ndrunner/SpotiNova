@@ -22,7 +22,7 @@ import {
 } from "@chakra-ui/react";
 import { FieldValues, SubmitHandler, useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import NavBar2 from "../components/NavBar2";
+import NavBar from "../components/NavBar";
 import HomeMenu from "../components/Menu";
 import { connectSpotify, addTokens } from "../services/DatabaseAPIClient";
 import useAuthUser from "../stores/useAuthUser";
@@ -229,7 +229,7 @@ const HomePage = () => {
             </Text>
           </Box>
           <Box justifyContent={"left"}>
-          <NavBar2 />
+            <NavBar />
           </Box>
           <HomeMenu />
         </HStack>
