@@ -24,4 +24,15 @@ const getTopArtists = async (accessToken: string) => {
     const data = await result.json();
     return data.items;
 };
-export { getToken, getTopTracks, getTopArtists };
+
+const getTrackFeatures = async (accessToken: string, trackIds: string[]) => {
+    const result = await fetch(`https://api.spotify.com/v1/audio-features?ids=${trackIds.join(',')}`, {
+        method: 'GET',
+        headers: {'Authorization': `Bearer ${accessToken}`}
+    });
+    
+    const data = await result.json();
+    return data.items;
+};
+
+export { getToken, getTopTracks, getTopArtists, getTrackFeatures };

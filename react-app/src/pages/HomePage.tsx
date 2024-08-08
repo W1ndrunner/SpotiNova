@@ -76,6 +76,11 @@ const HomePage = () => {
       alert(error.message);
     }
   };
+  const clearLocalStorage = () => {
+    localStorage.removeItem("topTracks");
+    localStorage.removeItem("topArtists");
+    localStorage.removeItem("statsTime");
+  };
   const generateStats = async () => {
     try {
       const token = await getToken(email);
