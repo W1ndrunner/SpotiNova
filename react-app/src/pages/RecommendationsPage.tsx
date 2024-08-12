@@ -110,6 +110,7 @@ const RecommendationsPage = () => {
           tracksData[i].album.release_date,
           tracksData[i].popularity
         );
+        console.log("Track: " + track);
         topTracks.push(track);
       }
       const trackIds = topTracks.map((track) => track.id);

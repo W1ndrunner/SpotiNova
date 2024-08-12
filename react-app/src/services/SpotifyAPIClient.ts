@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const getToken = async (email: string) => {
-    const response = await axios.get('http://localhost:3000/getToken', {params: {email}});
+    const response = await axios.get('http://localhost:3000/users/getToken', {params: {email}});
     return response.data;
 };
 
@@ -32,7 +32,7 @@ const getTrackFeatures = async (accessToken: string, trackIds: string[]) => {
     });
     
     const data = await result.json();
-    return data.items;
+    return data.audio_features;
 };
 
 export { getToken, getTopTracks, getTopArtists, getTrackFeatures };

@@ -187,14 +187,14 @@ app.get('/callback', function(req, res) {
     }
 });
 
-async function refreshAccessToken(refresh_token) {
+async function refreshAccessToken(refreshToken) {
     const authOptions = {
         method: 'POST',
         headers: {
             'Authorization': 'Basic ' + (Buffer.from(process.env.CLIENT_ID + ':' + process.env.CLIENT_SECRET).toString('base64')),
             'Content-Type': 'application/x-www-form-urlencoded'
         },
-        body: `grant_type=refresh_token&refresh_token=${refresh_token}`,
+        body: `grant_type=refresh_token&refresh_token=${refreshToken}`,
     };
     try {
         const response = await fetch('https://accounts.spotify.com/api/token', authOptions);
@@ -228,19 +228,32 @@ app.get('/users/getToken', async (req, res) => {
             const user = result.rows[0];
             const now = new Date();
             if (user.tokenexpire > now){
-                res.status(200).json(user.access_token);
-                console.log('access token:', user.access_token);
+                res.status(200).json(user.accesstoken);
+                console.log('access token, not expired:', user.accesstoken);
             } else{
                 const result2 = await refreshAccessToken(user.refreshtoken);
-                const query2 = 'UPDATE users SET accesstoken = $1, refreshtoken = $2, tokenexpire = $3 WHERE email = $4 RETURNING *';
-                const values2 = [result2.access_token, result2.refresh_token, result2.expires_at, email];
-                const result3 = await pool.query(query2, values2);
-                if (result3.rows.length > 0){
-                    res.status(200).json(result2.access_token);
-                    console.log('access token:', result2.access_token);
-                } else{
-                    res.status(400).send('Tokens not updated');
-                    }
+                if (result2.refresh_token == undefined){
+                    const query2 = 'UPDATE users SET accesstoken = $1, tokenexpire = $2 WHERE email = $3 RETURNING *';
+                    const values2 = [result2.access_token, result2.expires_at, email];    
+                    const result3 = await pool.query(query2, values2);
+                    if (result3.rows.length > 0){
+                        res.status(200).json(result2.access_token);
+                        console.log('access token, expired no refresh: ', result2.access_token);
+                    } else{
+                        res.status(400).send('Tokens not updated');
+                        }
+                } else{    
+                    const query2 = 'UPDATE users SET accesstoken = $1, refreshtoken = $2, tokenexpire = $3 WHERE email = $4 RETURNING *';
+                    const values2 = [result2.access_token, result2.refresh_token, result2.expires_at, email];
+                    console.log('refresh token: ', result2.refresh_token);      
+                    const result3 = await pool.query(query2, values2);
+                    if (result3.rows.length > 0){
+                        res.status(200).json(result2.access_token);
+                        console.log('access token, expired with refresh: ', result2.access_token);
+                    } else{
+                        res.status(400).send('Tokens not updated');
+                        }
+                }
             }
         } else{
             res.status(404).send('User not found');

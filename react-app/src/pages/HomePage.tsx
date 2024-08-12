@@ -238,6 +238,9 @@ const HomePage = () => {
           </Box>
           <HomeMenu />
         </HStack>
+        <Button colorScheme="purple" onClick={clearLocalStorage}>
+          Clear Local Storage
+        </Button>
         <Flex flex="1" justifyContent="Center" alignItems="center">
           {renderComponentBasedOnCondition()}
         </Flex>
