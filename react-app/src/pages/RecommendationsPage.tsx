@@ -22,7 +22,7 @@ import {
 } from "@chakra-ui/react";
 import NavBar from "../components/NavBar";
 import HomeMenu from "../components/Menu";
-import { connectSpotify, addTokens } from "../services/DatabaseAPIClient";
+import { addTopTracks } from "../services/DatabaseAPIClient";
 import useAuthUser from "../stores/useAuthUser";
 import {
   getToken,
@@ -110,7 +110,6 @@ const RecommendationsPage = () => {
           tracksData[i].album.release_date,
           tracksData[i].popularity
         );
-        console.log("Track: " + track);
         topTracks.push(track);
       }
       const trackIds = topTracks.map((track) => track.id);
@@ -127,10 +126,30 @@ const RecommendationsPage = () => {
           topTracks[i].liveness = trackFeatures[i].liveness;
           topTracks[i].valence = trackFeatures[i].valence;
           topTracks[i].tempo = trackFeatures[i].tempo;
-          console.log("Features added to track: " + (i+1));
         }
       }
-      console.log(trackFeatures);
+      /*       for (let i = 0; i < topTracks.length; i++) {
+        console.log("Track: " + topTracks[i].name);
+        console.log("ID: " + topTracks[i].id);
+        console.log("Artist: " + topTracks[i].artist);
+        console.log("Year: " + topTracks[i].year);
+        console.log("Popularity: " + topTracks[i].popularity);
+        console.log("Danceability: " + topTracks[i].danceability);
+        console.log("Energy: " + topTracks[i].energy);
+        console.log("Key: " + topTracks[i].key);
+        console.log("Loudness: " + topTracks[i].loudness);
+        console.log("Speechiness: " + topTracks[i].speechiness);
+        console.log("Acousticness: " + topTracks[i].acousticness);
+        console.log("Instrumentalness: " + topTracks[i].instrumentalness);
+        console.log("Liveness: " + topTracks[i].liveness);
+        console.log("Valence: " + topTracks[i].valence);
+        console.log("Tempo: " + topTracks[i].tempo);
+      } */
+      const response = await addTopTracks({
+        email: email,
+        tracks: topTracks,
+      });
+      console.log("RESPONSE: " + response);
     } catch (error) {
       console.error(error);
     }

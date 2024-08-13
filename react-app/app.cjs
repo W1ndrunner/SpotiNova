@@ -264,11 +264,48 @@ app.get('/users/getToken', async (req, res) => {
     }
 });
 
-// Get top artists (GET request)
-// Get top tracks (GET request)
-app.get('/toptracks', async (req, res) => {
-    
+async function addTopTracks(userid, tracks){
+    try{
+        let isError = false;
+        for (let i = 0; i < tracks.length; i++){
+            const query = 'INSERT INTO songs (spotifyid, artist, releasedate, popularity, danceability, energy, songkey, loudness, speechiness, acousticness, instrumentalness, liveness, valence, tempo, name) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING *';
+            const values = [tracks[i].id, tracks[i].artist, tracks[i].year, tracks[i].popularity, tracks[i].danceability, tracks[i].energy, tracks[i].key, tracks[i].loudness, tracks[i].speechiness, tracks[i].acousticness, tracks[i].instrumentalness, tracks[i].liveness, tracks[i].valence, tracks[i].tempo, tracks[i].name];
+            const query2 = 'INSERT INTO user_topsongs (userid, spotifyid) VALUES ($1, $2) RETURNING *';
+            const values2 = [userid, tracks[i].id];
+            const result = await pool.query(query, values);
+            const result2 = await pool.query(query2, values2);
+            if (!(result.rows.length > 0 && result2.rows.length > 0)){
+                isError = true;
+            }
+        }
+        return isError;
+    } catch(error){
+        console.error(error);
+        res.status(500).json({error: 'An error occurred'});
+    }
+};
+
+// Add Top Tracks to database (POST request)
+app.post('/users/addTopTracks', async (req, res) => {
+    try{
+        const {email, tracks} = req.body;
+        const query1 = 'SELECT userid from users WHERE email = $1';
+        const values1 = [email];
+        const result1 = await pool.query(query1, values1);
+        const userid = result1.rows[0].userid;
+        const result2 = await addTopTracks(userid, tracks);
+        console.log('result2: ', result2);
+        if (!result2){
+            res.status(200).send('Top tracks added');
+        } else{
+            res.status(400).send('Top tracks not added');
+        }
+    } catch (error){
+        console.error(error);
+        res.status(500).json({error: 'An error occurred'});
+    }
 });
+
 
 
     // Starts Express server on port 3000

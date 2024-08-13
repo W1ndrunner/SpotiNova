@@ -39,3 +39,11 @@ export const addTokens = async (userData : {email: string, accessToken: string, 
 };
 
 
+export const addTopTracks = async (userData: {email: string, tracks: any}) => {
+    try{
+        const response = await axios.post(`${serverBaseURL}/users/addTopTracks`, userData);
+        return response.data;
+    } catch (error: any) {
+        throw error.response.data;
+    }
+};
