@@ -7,6 +7,7 @@ const bcrypt = require('bcrypt');
 const querystring = require('querystring');
 const cookieParser = require('cookie-parser');
 const { error } = require('console');
+const {spawn} = require('child_process');
 require('dotenv').config();
 const redirect_url = 'http://localhost:3000/callback';
 
@@ -267,6 +268,12 @@ app.get('/users/getToken', async (req, res) => {
 async function addTopTracks(userid, tracks){
     try{
         let isError = false;
+        const query1 = 'DELETE FROM songs WHERE spotifyid IN (SELECT spotifyid FROM user_topsongs WHERE userid = $1)';
+        const values1 = [userid];
+        const result1 = await pool.query(query1, values1);
+        const query2 = 'DELETE FROM user_topsongs WHERE userid = $1';
+        const values2 = [userid];
+        const result2 = await pool.query(query2, values2);
         for (let i = 0; i < tracks.length; i++){
             const query = 'INSERT INTO songs (spotifyid, artist, releasedate, popularity, danceability, energy, songkey, loudness, speechiness, acousticness, instrumentalness, liveness, valence, tempo, name) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING *';
             const values = [tracks[i].id, tracks[i].artist, tracks[i].year, tracks[i].popularity, tracks[i].danceability, tracks[i].energy, tracks[i].key, tracks[i].loudness, tracks[i].speechiness, tracks[i].acousticness, tracks[i].instrumentalness, tracks[i].liveness, tracks[i].valence, tracks[i].tempo, tracks[i].name];
@@ -306,7 +313,33 @@ app.post('/users/addTopTracks', async (req, res) => {
     }
 });
 
-
+app.get('/users/recommendations', async (req, res) => {
+    try{
+        const{email} = req.query;
+        const query = 'SELECT userid from users WHERE email = $1';
+        const values = [email];
+        const result = await pool.query(query, values);
+        const userid = result.rows[0].userid;
+        let dataToSend;
+        const process = spawn('python', ['recommendations.py', userid]);
+        process.on('error', (error) => {
+            console.error(`Error spawning Python script: ${error.message}`);
+        });
+        process.stfout.on('data', (data) => {
+            dataToSend = data.toString();
+        });
+        process.stderr.on('data', (data) => {
+            console.error(`Error from Python script: ${data.toString()}`);
+        });
+        process.on('close', (code) => {
+            console.log(`Python script exited with code ${code}`);
+            res.status(200).json(dataToSend);
+        });
+    } catch (error){
+        console.error(error);
+        res.status(500).json({error: 'An error occurred'});
+    }
+});
 
     // Starts Express server on port 3000
 app.listen(3000, () => {
