@@ -35,4 +35,12 @@ const getTrackFeatures = async (accessToken: string, trackIds: string[]) => {
     return data.audio_features;
 };
 
-export { getToken, getTopTracks, getTopArtists, getTrackFeatures };
+const getTrackInfo = async (accessToken: string, trackIds: string[]) => {
+    const result = await fetch(`https://api.spotify.com/v1/tracks?ids=${trackIds.join(',')}`, {
+        method: 'GET',
+        headers: {'Authorization': `Bearer ${accessToken}`}
+    });
+    const data = await result.json();
+    return data.tracks;
+};
+export { getToken, getTopTracks, getTopArtists, getTrackFeatures, getTrackInfo };

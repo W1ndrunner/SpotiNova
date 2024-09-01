@@ -16,19 +16,27 @@ import {
   useDisclosure,
   useColorModeValue,
   Stack,
+  Spinner,
   extendTheme,
   ChakraProvider,
   VStack,
+  SimpleGrid,
+  Center,
 } from "@chakra-ui/react";
 import NavBar from "../components/NavBar";
 import HomeMenu from "../components/Menu";
-import { addTopTracks } from "../services/DatabaseAPIClient";
+import {
+  addTopTracks,
+  getRecommendations,
+} from "../services/DatabaseAPIClient";
 import useAuthUser from "../stores/useAuthUser";
 import {
   getToken,
   getTopTracks,
   getTrackFeatures,
+  getTrackInfo,
 } from "../services/SpotifyAPIClient";
+import { set } from "react-hook-form";
 const theme = extendTheme({
   colors: {
     brand: {
@@ -43,6 +51,9 @@ const theme = extendTheme({
 });
 
 const RecommendationsPage = () => {
+  const [loading, setLoading] = useState(false);
+  const [songInfo, setSongInfo] = useState(null);
+  const [buttonClicked, setButtonClicked] = useState(false);
   const { authUser, setUser } = useAuthUser();
   const user = JSON.parse(localStorage.getItem("user") ?? "");
   const email = user ? user.email : null;
@@ -99,6 +110,8 @@ const RecommendationsPage = () => {
   }
   const generateRecs = async () => {
     try {
+      setLoading(true);
+      setButtonClicked(true);
       const topTracks: Track[] = [];
       const token = await getToken(email);
       const tracksData = await getTopTracks(token);
@@ -128,32 +141,24 @@ const RecommendationsPage = () => {
           topTracks[i].tempo = trackFeatures[i].tempo;
         }
       }
-      /*       for (let i = 0; i < topTracks.length; i++) {
-        console.log("Track: " + topTracks[i].name);
-        console.log("ID: " + topTracks[i].id);
-        console.log("Artist: " + topTracks[i].artist);
-        console.log("Year: " + topTracks[i].year);
-        console.log("Popularity: " + topTracks[i].popularity);
-        console.log("Danceability: " + topTracks[i].danceability);
-        console.log("Energy: " + topTracks[i].energy);
-        console.log("Key: " + topTracks[i].key);
-        console.log("Loudness: " + topTracks[i].loudness);
-        console.log("Speechiness: " + topTracks[i].speechiness);
-        console.log("Acousticness: " + topTracks[i].acousticness);
-        console.log("Instrumentalness: " + topTracks[i].instrumentalness);
-        console.log("Liveness: " + topTracks[i].liveness);
-        console.log("Valence: " + topTracks[i].valence);
-        console.log("Tempo: " + topTracks[i].tempo);
-      } */
       const response = await addTopTracks({
         email: email,
         tracks: topTracks,
       });
-      console.log("RESPONSE: " + response);
+
+      const recs = await getRecommendations({ email: email });
+      const songids = recs.map((song: any) => song.songid);
+      const token2 = await getToken(email);
+      const songinfo = await getTrackInfo(token2, songids);
+      console.log(songinfo);
+      setSongInfo(songinfo);
     } catch (error) {
       console.error(error);
+    } finally {
+      setLoading(false);
     }
   };
+
   return (
     <ChakraProvider theme={theme}>
       <Flex
@@ -162,8 +167,8 @@ const RecommendationsPage = () => {
         width="100%"
         bgGradient={theme.colors.gradients.blackToPurple}
       >
-        <HStack justifyContent="space-between" width="100%" alignItems="center">
-          <Box textAlign="center">
+        <Flex width="100%" justifyContent="space-between" alignItems="center">
+          <Flex justifyContent="flex-start" textAlign="center">
             <Text
               bgGradient="linear(to-l, #7928CA, #FF0080)"
               bgClip="text"
@@ -172,16 +177,51 @@ const RecommendationsPage = () => {
             >
               SpotiNova
             </Text>
-          </Box>
-          <Box justifyContent={"left"}>
+          </Flex>
+          <Flex justifyContent="center" marginLeft="-120px">
+          <Box>
             <NavBar />
           </Box>
+          </Flex>
+          <Flex justifyContent="flex-end">
           <HomeMenu />
-        </HStack>
-        <Button colorScheme="purple" onClick={generateRecs}>
-          {" "}
-          Generate Recommendations
-        </Button>
+          </Flex>
+        </Flex>
+        {!buttonClicked && (
+          <Flex justifyContent="center" alignItems="center">
+            <Button colorScheme="purple" onClick={generateRecs} width="300px">
+              {" "}
+              Generate Recommendations
+            </Button>
+          </Flex>
+        )}
+        {loading ? (
+          <Flex justifyContent="center" alignItems="center" flex="1">
+            <Spinner size="xl" color="white" />
+          </Flex>
+        ) : (
+          <SimpleGrid columns={5} spacing={5}>
+            {songInfo &&
+              (songInfo as any[]).map((song: any) => (
+                <Box
+                  maxW="200px"
+                  display="flex"
+                  flexDirection="column"
+                  justifyContent="center"
+                  alignItems="center"
+                  textAlign="center"
+                >
+                  <Text fontSize="xl" color="white" fontWeight="bold">
+                    {song.name}
+                  </Text>
+                  <Text fontSize="md" color="white">
+                    {song.artists[0].name}
+                  </Text>
+                  <Image src={song.album.images[0].url} />
+                </Box>
+              ))}
+          </SimpleGrid>
+        )}
       </Flex>
     </ChakraProvider>
   );

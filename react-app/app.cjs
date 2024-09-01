@@ -301,7 +301,6 @@ app.post('/users/addTopTracks', async (req, res) => {
         const result1 = await pool.query(query1, values1);
         const userid = result1.rows[0].userid;
         const result2 = await addTopTracks(userid, tracks);
-        console.log('result2: ', result2);
         if (!result2){
             res.status(200).send('Top tracks added');
         } else{
@@ -313,6 +312,7 @@ app.post('/users/addTopTracks', async (req, res) => {
     }
 });
 
+// Generate and get user recommendations (GET request)
 app.get('/users/recommendations', async (req, res) => {
     try{
         const{email} = req.query;
@@ -323,17 +323,25 @@ app.get('/users/recommendations', async (req, res) => {
         let dataToSend;
         const process = spawn('python', ['recommendations.py', userid]);
         process.on('error', (error) => {
-            console.error(`Error spawning Python script: ${error.message}`);
+           console.error(`Error spawning Python script: ${error.message}`);
         });
-        process.stfout.on('data', (data) => {
+        process.stdout.on('data', (data) => {
             dataToSend = data.toString();
         });
         process.stderr.on('data', (data) => {
-            console.error(`Error from Python script: ${data.toString()}`);
+            //console.error(`Error from Python script: ${data.toString()}`);
         });
-        process.on('close', (code) => {
-            console.log(`Python script exited with code ${code}`);
-            res.status(200).json(dataToSend);
+        process.on('close', () => {
+            const query2 = 'SELECT songid FROM user_recommendations WHERE userid = $1';
+            const values2 = [userid];
+            pool.query(query2, values2, (err, result2) => {
+                if (err){
+                    console.error("Error querying user recommendations: ", err);
+                    res.status(500).json({error: 'An error occurred'});
+                } else{
+                    res.status(200).send(result2.rows);
+                }
+            });
         });
     } catch (error){
         console.error(error);

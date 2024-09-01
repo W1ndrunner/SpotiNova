@@ -47,3 +47,12 @@ export const addTopTracks = async (userData: {email: string, tracks: any}) => {
         throw error.response.data;
     }
 };
+
+export const getRecommendations = async (userData: {email: string}) => {
+    try{
+        const response = await axios.get(`${serverBaseURL}/users/recommendations`, {params: userData});
+        return response.data;
+    } catch (error: any) {
+        throw error.response.data;
+    }
+};

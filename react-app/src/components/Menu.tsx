@@ -17,6 +17,8 @@ import {
   extendTheme,
 } from "@chakra-ui/react";
 import { HamburgerIcon, CloseIcon } from "@chakra-ui/icons";
+import { useNavigate } from "react-router-dom";
+import useAuthUser from "../stores/useAuthUser";
 const theme = extendTheme({
   colors: {
     brand: {
@@ -33,12 +35,23 @@ interface Props {
 }
 
 const HomeMenu = () => {
-  return (
-    
-    <Flex alignItems={"center"}>
-          
+  const navigate = useNavigate();
+  const { setUser, logoutUser } = useAuthUser();
 
-      <ChakraMenu> {/* Use the correct component name */}
+  const handleLogout = () => {
+    try {
+      localStorage.removeItem("user");
+      logoutUser();
+      navigate("/login");
+    } catch (error: any) {
+      console.error("Error logging out", error);
+    }
+  };
+  return (
+    <Flex alignItems={"center"}>
+      <ChakraMenu>
+        {" "}
+        {/* Use the correct component name */}
         <MenuButton
           as={Button}
           rounded={"full"}
@@ -57,10 +70,9 @@ const HomeMenu = () => {
           <MenuItem>Account Settings</MenuItem>
           <MenuItem>Link 2</MenuItem>
           <MenuDivider />
-          <MenuItem>Log out</MenuItem>
+          <MenuItem onClick={handleLogout}>Log out</MenuItem>
         </MenuList>
-      </ChakraMenu> {/* Use the correct component name */}
-      
+      </ChakraMenu>
     </Flex>
   );
 };

@@ -222,8 +222,8 @@ const HomePage = () => {
         width="100%"
         bgGradient={theme.colors.gradients.blackToPurple}
       >
-        <HStack justifyContent="space-between" width="100%" alignItems="center">
-          <Box textAlign="center">
+        <Flex width="100%" justifyContent="space-between" alignItems="center">
+          <Flex justifyContent="flex-start" textAlign="center">
             <Text
               bgGradient="linear(to-l, #7928CA, #FF0080)"
               bgClip="text"
@@ -232,13 +232,17 @@ const HomePage = () => {
             >
               SpotiNova
             </Text>
-          </Box>
-          <Box justifyContent={"left"}>
-            <NavBar />
-          </Box>
-          <HomeMenu />
-        </HStack>
-{/*         <Button colorScheme="purple" onClick={clearLocalStorage}>
+          </Flex>
+          <Flex justifyContent="center" marginLeft="-120px">
+            <Box>
+              <NavBar />
+            </Box>
+          </Flex>
+          <Flex justifyContent="flex-end">
+            <HomeMenu />
+          </Flex>
+        </Flex>
+        {/*         <Button colorScheme="purple" onClick={clearLocalStorage}>
           Clear Local Storage
         </Button> */}
         <Flex flex="1" justifyContent="Center" alignItems="center">

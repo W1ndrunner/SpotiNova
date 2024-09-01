@@ -16,12 +16,11 @@ connection = psycopg.connect(
     sslrootcert="ca-certificate.crt",
     sslmode="require"
 )
-def get_recommendations(user_id):
+def get_topsongs(user_id):
     cursor = connection.cursor()
     cursor.execute("SELECT artist, name, spotifyid, popularity, EXTRACT('year' FROM releasedate), danceability, energy, songkey, loudness, speechiness, acousticness, instrumentalness, liveness, valence, tempo FROM songs WHERE spotifyid IN (SELECT spotifyid FROM user_topsongs WHERE userid = %s);", (user_id,))
     songs = cursor.fetchall()
     cursor.close()
-    connection.close()
     columns = ['artist_name', 'track_name', 'track_id', 'popularity', 'year', 'danceability', 'energy', 'key', 'loudness', 'speechiness', 'acousticness', 'instrumentalness', 'liveness', 'valence', 'tempo']
     df = pd.DataFrame(songs, columns=columns)
     return df
@@ -45,23 +44,7 @@ def create_feature_set(df, float_cols):
     final['id'] = df['track_id'].values
     return final
 
-df = pd.read_csv('spotify_data.csv')
-df2 = df.copy()
-df2 = df2.drop(['Unnamed: 0', 'genre', 'mode', 'duration_ms', 'time_signature'], axis=1)
-float_cols = df2.dtypes[df2.dtypes == 'float64'].index.values
-ohe_cols = 'popularity'
-df2['popularity_red'] = df2['popularity'].apply(lambda x: int(x/5))
-complete_feature_set = create_feature_set(df2, float_cols)
 
-
-
-
-playlistdf = get_recommendations(11)
-convert_dict = {'danceability': float, 'energy': float, 'loudness': float, 'speechiness': float, 'acousticness': float, 'instrumentalness': float, 'liveness': float, 'valence': float, 'tempo': float}
-playlistdf = playlistdf.astype(convert_dict)
-playlistdf['year'] = playlistdf['year'].astype('int64')
-playlistdf['key'] = playlistdf['key'].astype('int64')
-playlistdf['popularity_red'] = playlistdf['popularity'].apply(lambda x: int(x/5))
 
 def generate_playlist_feature(complete_feature_set, playlist_df):
     complete_feature_set_playlist = complete_feature_set.iloc[0:0].copy()
@@ -74,13 +57,38 @@ def generate_playlist_feature(complete_feature_set, playlist_df):
 
     return complete_feature_set_playlist_final.sum(axis=0), complete_feature_set_nonplaylist
 
-complete_feature_set_playlist_vector, complete_feature_set_nonplaylist = generate_playlist_feature(complete_feature_set, playlistdf)
 
 def generate_recommendations(df, features, nonplaylist_features):
     non_playlist_df = df[df['track_id'].isin(nonplaylist_features['id'].values)]
     non_playlist_df['sim'] = cosine_similarity(nonplaylist_features.drop("id", axis=1).values, features.values.reshape(1, -1))[:,0]
     non_playlist_df_top40 = non_playlist_df.sort_values('sim', ascending = False).head(40)
-    print(non_playlist_df['sim'].describe())
     return non_playlist_df_top40
+
+df = pd.read_csv('spotify_data.csv')
+df2 = df.copy()
+df2 = df2.drop(['Unnamed: 0', 'genre', 'mode', 'duration_ms', 'time_signature'], axis=1)
+float_cols = df2.dtypes[df2.dtypes == 'float64'].index.values
+ohe_cols = 'popularity'
+df2['popularity_red'] = df2['popularity'].apply(lambda x: int(x/5))
+complete_feature_set = create_feature_set(df2, float_cols)
+
+
+playlistdf = get_topsongs(int(sys.argv[1]))
+convert_dict = {'danceability': float, 'energy': float, 'loudness': float, 'speechiness': float, 'acousticness': float, 'instrumentalness': float, 'liveness': float, 'valence': float, 'tempo': float}
+playlistdf = playlistdf.astype(convert_dict)
+playlistdf['year'] = playlistdf['year'].astype('int64')
+playlistdf['key'] = playlistdf['key'].astype('int64')
+playlistdf['popularity_red'] = playlistdf['popularity'].apply(lambda x: int(x/5))
+
+complete_feature_set_playlist_vector, complete_feature_set_nonplaylist = generate_playlist_feature(complete_feature_set, playlistdf)
 recommend = generate_recommendations(df2, complete_feature_set_playlist_vector, complete_feature_set_nonplaylist)
-print(recommend.head())
+
+top10songs = recommend[['artist_name', 'track_name', 'track_id', 'sim']].head(10)
+cursor = connection.cursor()
+cursor.execute("DELETE FROM user_recommendations WHERE userid = %s;", (int(sys.argv[1]),))
+connection.commit()
+for index, item in top10songs.iterrows():
+    cursor.execute("INSERT INTO user_recommendations (userid, songid) VALUES (%s, %s);", (int(sys.argv[1]), item['track_id']))
+connection.commit()
+cursor.close()
+connection.close()

@@ -38,12 +38,12 @@ const NavBar = () => {
       <Box
         bgGradient={theme.colors.gradients.blackToPurple}
         borderRadius="40px"
-        p={3}
+        p={2}
         boxShadow="md"
         maxW="400px"
         width="100%"
       >
-        <HStack spacing={4}>
+        <HStack>
           <Link href="/home">
           <Button colorScheme="brand" variant="solid" borderRadius="md">
             Home
