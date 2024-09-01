@@ -68,7 +68,6 @@ const HomeMenu = () => {
         </MenuButton>
         <MenuList>
           <MenuItem>Account Settings</MenuItem>
-          <MenuItem>Link 2</MenuItem>
           <MenuDivider />
           <MenuItem onClick={handleLogout}>Log out</MenuItem>
         </MenuList>

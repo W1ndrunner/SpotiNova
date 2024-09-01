@@ -31,6 +31,7 @@ import {
   getTopTracks,
   getTopArtists,
 } from "../services/SpotifyAPIClient";
+import { get } from "http";
 
 const theme = extendTheme({
   colors: {
@@ -81,20 +82,41 @@ const HomePage = () => {
     localStorage.removeItem("topArtists");
     localStorage.removeItem("statsTime");
   };
-  const generateStats = async () => {
+
+  const generateStatsWithTokens = async (access_token: string) => {
     try {
-      const token = await getToken(email);
-      const topTracks = await getTopTracks(token.accessToken);
-      const topArtists = await getTopArtists(token.accessToken);
-      console.log(topTracks.items);
-      console.log(topArtists.items);
+      const tracksData = await getTopTracks(access_token);
+      const artistsData = await getTopArtists(access_token);
+      const topArtists: Artist[] = [];
+      const topTracks: Track[] = [];
+
+      for (let i = 0; i < tracksData.length; i++) {
+        const track = new Track(
+          tracksData[i].name,
+          tracksData[i].album.artists[0].name,
+          tracksData[i].album.images[0].url
+        );
+        topTracks.push(track);
+      }
+
+      for (let i = 0; i < artistsData.length; i++) {
+        const artist = new Artist(
+          artistsData[i].name,
+          artistsData[i].images[0].url
+        );
+        topArtists.push(artist);
+      }
+      localStorage.setItem("topTracks", JSON.stringify(topTracks));
+      localStorage.setItem("topArtists", JSON.stringify(topArtists));
+      localStorage.setItem("statsTime", new Date().getTime().toString());
+      window.location.href = "/home";
     } catch (error: any) {
       alert(error.message);
     }
   };
-
-  const generateStatsWithTokens = async (access_token: string) => {
+  const generateStatsWithoutTokens = async () => {
     try {
+      const access_token = await getToken(email);
       const tracksData = await getTopTracks(access_token);
       const artistsData = await getTopArtists(access_token);
       const topArtists: Artist[] = [];
@@ -167,7 +189,7 @@ const HomePage = () => {
           justifyContent="center"
           alignItems="center"
         >
-          <Image src={artist.image} boxSize="200px" alt="Artist" />
+          <Image src={artist.image} boxSize="190px" alt="Artist" />
           <Text style={{ color: "white" }}>
             <b>{artist.name}</b>
           </Text>
@@ -182,7 +204,7 @@ const HomePage = () => {
           justifyContent="center"
           alignItems="center"
         >
-          <Image src={track.image} boxSize="200px" alt="Track" />
+          <Image src={track.image} boxSize="190px" alt="Track" />
           <Text style={{ color: "white" }}>
             <b>{track.name}</b>
             {" - " + track.artist}
@@ -191,20 +213,47 @@ const HomePage = () => {
       ));
 
       return (
-        <VStack spacing={10}>
+        <div>
+          <VStack spacing={10}>
+            <HStack>
+              <Text fontSize="xl" color="white">
+                Top Artists
+              </Text>
+              {artistElements}
+            </HStack>
+            <HStack alignItems="baseline">
+              <Text fontSize="xl" color="white" alignSelf="center">
+                Top Tracks
+              </Text>
+              {trackElements}
+            </HStack>
+          </VStack>
           <HStack>
-            <Text fontSize="xl" color="white">
-              Top Artists
+            <Box>
+              <Button
+                colorScheme="purple"
+                onClick={generateStatsWithoutTokens}
+              >
+                {" "}
+                Regenerate Stats
+              </Button>
+            </Box>
+            <Text style={{ color: "white" }}>
+              Stats generated at:{" "}
+              {new Date(
+                parseInt(localStorage.getItem("statsTime") ?? "")
+              ).toLocaleString("en-UK", {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit",
+                hour12: false,
+              })}
             </Text>
-            {artistElements}
           </HStack>
-          <HStack alignItems="baseline">
-            <Text fontSize="xl" color="white" alignSelf="center">
-              Top Tracks
-            </Text>
-            {trackElements}
-          </HStack>
-        </VStack>
+        </div>
       );
     } else {
       return (
