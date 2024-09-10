@@ -72,7 +72,7 @@ const HomePage = () => {
   }
   const connect = async () => {
     try {
-      window.location.href = "http://localhost:3000/connect";
+      window.location.href = "http://16.171.9.42:3000/connect";
     } catch (error: any) {
       alert(error.message);
     }

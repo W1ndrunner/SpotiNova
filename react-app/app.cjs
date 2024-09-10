@@ -6,10 +6,11 @@ const cors = require('cors');
 const bcrypt = require('bcrypt');
 const querystring = require('querystring');
 const cookieParser = require('cookie-parser');
+const path = require('path');
 const { error } = require('console');
 const {spawn} = require('child_process');
 require('dotenv').config();
-const redirect_url = 'http://localhost:3000/callback';
+const redirect_url = 'http://16.171.9.42:3000/callback';
 
 // Database connection details with SSL
 const pool = new pg.Pool({
@@ -19,7 +20,7 @@ const pool = new pg.Pool({
     password: process.env.DB_PASS,
     port: process.env.DB_PORT,
     ssl: {
-        ca: fs.readFileSync('ca-certificate.crt').toString(),
+        ca: fs.readFileSync(path.join(__dirname, 'ca-certificate.crt')).toString(),
     },
 
 });
@@ -37,7 +38,7 @@ const generateRandomString = function(length) {
 app.use(express.json());
 app.use(cookieParser());
 const corsOptions ={
-    origin:'http://localhost:5173', 
+    origin:'http://16.171.9.42:5173', 
     credentials:true,            //access-control-allow-credentials:true
     optionsSuccessStatus:200
 }
@@ -168,7 +169,7 @@ app.get('/callback', function(req, res) {
                     const access_token = data.access_token;
                     const refresh_token = data.refresh_token;
                     const expires_at = new Date(new Date().getTime() + data.expires_in * 1000); 
-                    res.redirect('http://localhost:5173/home?' + 
+                    res.redirect('http://16.171.9.42:5173/home?' + 
                         querystring.stringify({
                             access_token: access_token,
                             refresh_token: refresh_token
@@ -321,7 +322,7 @@ app.get('/users/recommendations', async (req, res) => {
         const result = await pool.query(query, values);
         const userid = result.rows[0].userid;
         let dataToSend;
-        const process = spawn('python', ['recommendations.py', userid]);
+        const process = spawn('python', [path.join(__dirname, 'recommendations.py'), userid]);
         process.on('error', (error) => {
            console.error(`Error spawning Python script: ${error.message}`);
         });
@@ -350,6 +351,6 @@ app.get('/users/recommendations', async (req, res) => {
 });
 
     // Starts Express server on port 3000
-app.listen(3000, () => {
+app.listen(3000, '0.0.0.0', () => {
     console.log('Server listening on port 3000');
 });

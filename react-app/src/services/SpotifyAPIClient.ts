@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const getToken = async (email: string) => {
-    const response = await axios.get('http://localhost:3000/users/getToken', {params: {email}});
+    const response = await axios.get('http://16.171.9.42:3000/users/getToken', {params: {email}});
     return response.data;
 };
 

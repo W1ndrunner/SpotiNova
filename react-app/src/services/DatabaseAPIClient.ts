@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const serverBaseURL = 'http://localhost:3000';
+const serverBaseURL = 'http://16.171.9.42:3000';
 
 export const createUser = async (userData : {email: string, password: string}) => {
     try{
